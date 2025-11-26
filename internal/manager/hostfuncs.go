@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 
 	extism "github.com/extism/go-sdk"
-	"go.uber.org/zap"
 )
 
 type logRequest struct {
@@ -168,14 +167,12 @@ func (m *Manager) hostSendMessage() extism.HostFunction {
 		func(_ context.Context, p *extism.CurrentPlugin, stack []uint64) {
 			data, err := p.ReadBytes(stack[0])
 			if err != nil {
-				m.logger.Debug("host_send_message: read bytes failed", zap.Error(err))
 				stack[0] = 0
 				return
 			}
 
 			var req sendMessageRequest
 			if err := json.Unmarshal(data, &req); err != nil {
-				m.logger.Debug("host_send_message: unmarshal failed", zap.Error(err))
 				stack[0] = 0
 				return
 			}
@@ -187,7 +184,6 @@ func (m *Manager) hostSendMessage() extism.HostFunction {
 
 			player, ok := m.serverAPI.GetPlayer(req.PlayerUUID)
 			if !ok {
-				m.logger.Debug("host_send_message: player not found", zap.String("uuid", req.PlayerUUID))
 				stack[0] = 0
 				return
 			}

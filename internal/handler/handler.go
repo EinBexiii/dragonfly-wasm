@@ -3,9 +3,11 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"net"
 	"time"
 
 	"github.com/df-mc/dragonfly/server/block/cube"
+	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/entity"
 	"github.com/df-mc/dragonfly/server/item"
 	"github.com/df-mc/dragonfly/server/player"
@@ -314,4 +316,88 @@ func healingSourceToString(src world.HealingSource) string {
 		return "food"
 	}
 	return "unknown"
+}
+
+func (h *PlayerHandler) HandleQuit(p *player.Player) {
+	h.dispatchEvent(plugin.EventPlayerQuit, map[string]any{"player": playerToMap(p)})
+}
+
+func (h *PlayerHandler) HandleAttackEntity(ctx *player.Context, e world.Entity, force, height *float64, critical *bool) {
+	if cancelled, _ := h.dispatchEvent(plugin.EventPlayerAttackEntity, map[string]any{
+		"player":   playerToMap(ctx.Val()),
+		"target":   entityToMap(e),
+		"force":    *force,
+		"height":   *height,
+		"critical": *critical,
+	}); cancelled {
+		ctx.Cancel()
+	}
+}
+
+func (h *PlayerHandler) HandlePunchBlock(ctx *player.Context, pos cube.Pos, face cube.Face) {
+	if cancelled, _ := h.dispatchEvent(plugin.EventBlockInteract, map[string]any{
+		"player":   playerToMap(ctx.Val()),
+		"position": blockPosToMap(pos),
+		"face":     int(face),
+	}); cancelled {
+		ctx.Cancel()
+	}
+}
+
+func (h *PlayerHandler) HandleItemConsume(ctx *player.Context, stack item.Stack) {
+	if cancelled, _ := h.dispatchEvent(plugin.EventItemConsume, map[string]any{
+		"player": playerToMap(ctx.Val()),
+		"item":   itemToMap(stack),
+	}); cancelled {
+		ctx.Cancel()
+	}
+}
+
+func (h *PlayerHandler) HandleItemDrop(ctx *player.Context, stack item.Stack) {
+	if cancelled, _ := h.dispatchEvent(plugin.EventItemDrop, map[string]any{
+		"player": playerToMap(ctx.Val()),
+		"item":   itemToMap(stack),
+	}); cancelled {
+		ctx.Cancel()
+	}
+}
+
+func (h *PlayerHandler) HandleItemPickup(ctx *player.Context, stack *item.Stack) {
+	if cancelled, _ := h.dispatchEvent(plugin.EventItemPickup, map[string]any{
+		"player": playerToMap(ctx.Val()),
+		"item":   itemToMap(*stack),
+	}); cancelled {
+		ctx.Cancel()
+	}
+}
+
+func (h *PlayerHandler) HandleSignEdit(ctx *player.Context, pos cube.Pos, frontSide bool, oldText, newText string) {
+	if cancelled, _ := h.dispatchEvent(plugin.EventSignEdit, map[string]any{
+		"player":     playerToMap(ctx.Val()),
+		"position":   blockPosToMap(pos),
+		"front_side": frontSide,
+		"old_text":   oldText,
+		"new_text":   newText,
+	}); cancelled {
+		ctx.Cancel()
+	}
+}
+
+func (h *PlayerHandler) HandleTransfer(ctx *player.Context, addr *net.UDPAddr) {
+	if cancelled, _ := h.dispatchEvent(plugin.EventServerTransfer, map[string]any{
+		"player":  playerToMap(ctx.Val()),
+		"address": addr.String(),
+	}); cancelled {
+		ctx.Cancel()
+	}
+}
+
+func (h *PlayerHandler) HandleCommandExecution(ctx *player.Context, c cmd.Command, args []string) {
+	if cancelled, _ := h.dispatchEvent(plugin.EventCommand, map[string]any{
+		"player":  playerToMap(ctx.Val()),
+		"command": c.Name(),
+		"args":    args,
+	}); cancelled {
+		ctx.Cancel()
+	}
 }
