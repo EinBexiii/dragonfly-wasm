@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package dragonfly.plugin;
+
+option go_package = "github.com/EinBexiii/dragonfly-wasm/api/proto/pluginpb";
+
+import "api/proto/events.proto";
+
+// PluginManifest describes a plugin's metadata and capabilities.
+message PluginManifest {
+  // Unique identifier for the plugin.
+  string id = 1;
+  // Human-readable name.
+  string name = 2;
+  // Semantic version string (e.g., "1.0.0").
+  string version = 3;
+  // Plugin author(s).
+  repeated string authors = 4;
+  // Short description of the plugin.
+  string description = 5;
+  // Plugin homepage or repository URL.
+  string url = 6;
+  // License identifier (e.g., "MIT", "Apache-2.0").
+  string license = 7;
+  // List of event types this plugin subscribes to.
+  repeated string subscribed_events = 8;
+  // Required permissions for this plugin.
+  repeated Permission permissions = 9;
+  // Dependencies on other plugins.
+  repeated PluginDependency dependencies = 10;
+  // Minimum Dragonfly version required.
+  string min_dragonfly_version = 11;
+  // Plugin API version this plugin targets.
+  string api_version = 12;
+}
+
+// Permission defines a capability the plugin requests.
+message Permission {
+  // Permission identifier (e.g., "world.modify", "player.kick").
+  string id = 1;
+  // Human-readable description of why this permission is needed.
+  string reason = 2;
+  // Whether this permission is required or optional.
+  bool required = 3;
+}
+
+// PluginDependency defines a dependency on another plugin.
+message PluginDependency {
+  // Plugin ID of the dependency.
+  string plugin_id = 1;
+  // Version constraint (e.g., ">=1.0.0", "^2.0").
+  string version_constraint = 2;
+  // Whether this dependency is required or optional.
+  bool required = 3;
+}
+
+// PluginState represents the current state of a plugin.
+enum PluginState {
+  PLUGIN_STATE_UNSPECIFIED = 0;
+  PLUGIN_STATE_UNLOADED = 1;
+  PLUGIN_STATE_LOADING = 2;
+  PLUGIN_STATE_LOADED = 3;
+  PLUGIN_STATE_ENABLED = 4;
+  PLUGIN_STATE_DISABLED = 5;
+  PLUGIN_STATE_ERROR = 6;
+}
+
+// PluginInfo contains runtime information about a loaded plugin.
+message PluginInfo {
+  // Plugin manifest.
+  PluginManifest manifest = 1;
+  // Current state.
+  PluginState state = 2;
+  // Load timestamp (Unix milliseconds).
+  int64 loaded_at = 3;
+  // Error message if state is ERROR.
+  string error_message = 4;
+  // Memory usage in bytes.
+  uint64 memory_usage = 5;
+  // Number of events processed.
+  uint64 events_processed = 6;
+  // Average event processing time in microseconds.
+  uint64 avg_processing_time_us = 7;
+}
+
+// EventEnvelope wraps an event with metadata for plugin dispatch.
+message EventEnvelope {
+  // Unique event ID for tracking.
+  string event_id = 1;
+  // Event type identifier (e.g., "player.join", "block.break").
+  string event_type = 2;
+  // Timestamp when the event occurred (Unix nanoseconds).
+  int64 timestamp = 3;
+  // Whether this event can be cancelled.
+  bool cancellable = 4;
+  // Serialized event data (one of the event types from events.proto).
+  bytes payload = 5;
+}
+
+// EventResponse is the plugin's response to an event.
+message EventResponse {
+  // Event ID this response corresponds to.
+  string event_id = 1;
+  // Whether the event should be cancelled.
+  bool cancelled = 2;
+  // Modified event data (if the plugin modified the event).
+  bytes modified_payload = 3;
+  // Error message if processing failed.
+  string error = 4;
+  // Processing time in microseconds.
+  uint64 processing_time_us = 5;
+}
+
+// HostCallRequest represents a call from plugin to host.
+message HostCallRequest {
+  // Unique request ID for correlation.
+  string request_id = 1;
+  // Function name to call.
+  string function = 2;
+  // Serialized request data.
+  bytes payload = 3;
+}
+
+// HostCallResponse is the host's response to a plugin call.
+message HostCallResponse {
+  // Request ID this response corresponds to.
+  string request_id = 1;
+  // Whether the call succeeded.
+  bool success = 2;
+  // Serialized response data.
+  bytes payload = 3;
+  // Error message if the call failed.
+  string error = 4;
+}
+
+// PluginConfig contains configuration passed to the plugin on initialization.
+message PluginConfig {
+  // Plugin-specific configuration as key-value pairs.
+  map<string, string> settings = 1;
+  // Server information.
+  ServerInfo server_info = 2;
+}
+
+// ServerInfo contains information about the Dragonfly server.
+message ServerInfo {
+  // Server name.
+  string name = 1;
+  // Server address.
+  string address = 2;
+  // Maximum players.
+  int32 max_players = 3;
+  // Server version.
+  string version = 4;
+  // Available worlds.
+  repeated string worlds = 5;
+}
+
+// PluginContext contains runtime context passed with each event.
+message PluginContext {
+  // Current server tick.
+  int64 server_tick = 1;
+  // Current online player count.
+  int32 online_players = 2;
+  // Server TPS (ticks per second).
+  float server_tps = 3;
+}

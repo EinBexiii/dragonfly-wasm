@@ -1,0 +1,36 @@
+id = "com.example.blockprotect"
+name = "Block Protection"
+description = "Protects valuable blocks from being mined and tracks player statistics"
+entry_point = "plugin.wasm"
+license = "MIT"
+authors = ["EinBexiii"]
+
+[version]
+major = 1
+minor = 0
+patch = 0
+
+[api_version]
+major = 1
+minor = 0
+patch = 0
+
+[[events]]
+event = "block_break"
+priority = -100
+ignore_cancelled = false
+
+[[events]]
+event = "block_place"
+priority = 0
+ignore_cancelled = false
+
+[[events]]
+event = "player_join"
+priority = 50
+ignore_cancelled = true
+
+[limits]
+max_memory_mb = 32
+max_execution_ms = 50
+max_fuel = 500000

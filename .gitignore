@@ -1,0 +1,59 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+server
+
+# Go
+*.test
+*.out
+go.work
+go.work.sum
+
+# Rust / Cargo
+target/
+Cargo.lock
+**/*.rs.bk
+
+# WASM artifacts
+*.wasm
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# Dragonfly server data
+world/
+players/
+resources/
+config.toml
+server.properties
+
+# Plugin data
+plugin_data/
+plugin_cache/
+
+# Logs
+*.log
+logs/
+
+# Debug
+__debug_bin*
+
+# Local config overrides
+*.local.toml
+.env
+.env.*
